@@ -1,0 +1,41 @@
+.logements-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logements-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    background-color: #f6f6f6;
+    border-radius: 25px;
+    width: 80%;
+    margin: 40px auto; 
+    padding: 20px;
+
+    .logement-card {
+        border-radius: 15px;
+        padding: 10px;
+        position: relative;
+        cursor: pointer;
+
+        .logement-cover {
+            width: 100%;
+            height: 340px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .logement-title {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 18px;
+            width: 60%;
+        }
+    }
+}

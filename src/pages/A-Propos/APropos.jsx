@@ -1,7 +1,13 @@
+import './APropos.scss'
+import Banner from '../../components/Banner/Banner'
+import BackgrndBanner from '../../components/About-Components/Backgrnd-Banner/BackgrndBanner'
+
+
 function APropos() {
     return (
         <div>
-            <h1>A Propos</h1>
+            <Banner />
+            <BackgrndBanner />
         </div>
     );
 }

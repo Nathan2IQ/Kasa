@@ -1,0 +1,19 @@
+.footer__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: black;
+    padding: 40px 40px 10px 40px;
+
+    .footer__img {
+        display: flex;
+        justify-content: center;
+        width: 122px;
+        height: 40px;
+    }
+
+    .footer__txt {
+        color: white;
+        font-size: 24px;
+    }
+}

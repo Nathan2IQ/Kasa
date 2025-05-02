@@ -1,4 +1,4 @@
-import ImgBackgrnd from '../../assets/backgrnd-home-page.png'
+import ImgBackgrnd from '../../../assets/backgrnd-home-page.png'
 import './BannerBackgrnd.scss'
 
 function BannerBackgrnd() {
