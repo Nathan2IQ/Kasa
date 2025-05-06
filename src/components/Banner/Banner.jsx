@@ -1,21 +1,16 @@
 import './Banner.scss'
-import Logo from '../../assets/Logo.png'
-import { Link } from 'react-router-dom'
 
-function Banner() {
+function BannerBackgrnd(props) {
+    const bannerClass = props.noOverlay ? 'banner banner--no-overlay' : 'banner';
+
     return (
 
-        <header className='header'>
-            <div>
-                <img src={Logo} alt='Logo de Kasa' />
-            </div>
-            <div className='link'>
-                <Link to='/' className='link__txt'>Accueil</Link>
-                <Link to='/a-propos' className='link__txt'>A Propos</Link>
-            </div>
-        </header>
+        <div className={bannerClass}>
+            <img src={props.img} alt='Photo de falaises' className='banner__img'/>
+            <h1 className='banner__title'>{props.txt}</h1>
+        </div>
 
     )
 }
 
-export default Banner
+export default BannerBackgrnd
