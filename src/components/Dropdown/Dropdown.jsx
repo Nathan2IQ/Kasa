@@ -12,7 +12,7 @@ function Dropdown({ title, content }) {
         <div className={`dropdown ${isOpen ? 'dropdown--open' : ''}`}>
             <div className='dropdown__title' onClick={toggleDropdown}>
                 <h2>{title}</h2>
-                <i className={`fa-solid ${isOpen ? 'fa-chevron-down' : 'fa-chevron-up'}`}></i>
+                <i className={`fa-solid fa-chevron-up ${isOpen ? 'rotate' : ''}`}></i>
             </div>
             <div className={`dropdown__content ${isOpen ? 'dropdown--open' : ''}`}>
                 <p>{content}</p>
