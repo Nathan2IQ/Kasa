@@ -28,14 +28,17 @@ function APropos() {
     ];
 
     return (
-        <div>
+        <>
             <Nav />
-            <Banner img={BannerImgAPropos} noOverlay={true} />
-            {dropdownData.map((content, i) => (
-                <Dropdown key={i} title={content.title} content={content.content} />
-            ))}
-            <Footer />
-        </div>
+            <main>
+                <Banner img={BannerImgAPropos} noOverlay={true} />
+                {dropdownData.map((content, i) => (
+                    <Dropdown key={i} title={content.title} content={content.content} />
+                ))}
+            </main>
+                <Footer />
+
+        </>
     );
 }
 
