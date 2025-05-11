@@ -1,7 +1,7 @@
 import './Logements.scss'
 import Nav from '../../components/Nav/Nav'
 import Footer from '../../components/Footer/Footer'
-import { useParams } from 'react-router-dom';
+import { Link, useParams, Navigate } from 'react-router-dom';
 import data from '../../datas/logements.json'
 import Slider from '../../components/Slider/Slider'
 import Detail from '../../components/LogementDetail/LogementDetail';
@@ -15,7 +15,7 @@ function logementPage() {
     const logement = data.find((logement) => logement.id === id);
 
     if (!logement) {
-        return <p>Logement non trouvé</p>;
+        return <Navigate to="/404" replace />;
     }
 
     return (
@@ -32,8 +32,8 @@ function logementPage() {
                     rating={logement.rating}
                 />
                 <div className='dropdown__logement'>
-                    <Dropdown className='dropdown__description' title='Description' content={logement.description} />
-                    <Dropdown className='dropdown__equipement' title='Equipements' jsonContent={logement.equipements}/>
+                    <Dropdown title='Description' content={logement.description} />
+                    <Dropdown title='Equipements' content={logement.equipments.map((item, index) => <li key={index}>{item}</li>)} />
                 </div>
             </main>
             <Footer />

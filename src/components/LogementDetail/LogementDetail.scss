@@ -1,73 +1,88 @@
-.logement {
+.main-container {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
-    align-items: center;
 
-    .logement__txt {
+        .txt__wrapper {
+            display: flex;
+            flex-direction: column;
 
-        .logement__txt__title {
-            color: #ff6060;
-            font-size: 36px;
-            font-weight: 500;
-            margin: 20px 0 0 60px;
-        }
+            .txt__global {
 
-        .logement__txt__place {
-            font-size: 18px;
-            font-weight: 500;
-            margin: 15px 0 20px 60px;
-        }
-    }
+                .txt__global__title {
+                    color: #ff6060;
+                    font-size: 36px;
+                    font-weight: 500;
+                    margin: 20px 50px;
+                }
 
-    .logement__host {
-        display: flex;
-        align-items: center;
-        margin: 10px 20px;
+                .txt__global__place {
+                    font-size: 18px;
+                    font-weight: 500;
+                    margin: 15px 0 20px 50px;
+                }
+            }
 
-        .logement__host__txt {
-            color: #ff6060;
-            font-size: 18px;
-            font-weight: 500;
-            width: 40%;
-            padding: 0 10px;
-            text-align: end;
-        }
-        .logement__host__img {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-        }
-    }
+            .txt__tags {
+                display: flex;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                margin-left: 40px;
 
-    .logement__tags {
-        display: flex;
-        margin-left: 50px;
+                .txt__tags__content {
+                    width: 150px;
+                    text-align: center;
+                    color: white;
+                    border-radius: 10px;
+                    background-color: #ff6060;
+                    padding: 5px;
+                    margin: 10px;
+                }
+            }
+        }   
 
-        .logement__tags__txt {
-            width: 150px;
-            text-align: center;
-            color: white;
-            border-radius: 10px;
-            background-color: #ff6060;
-            padding: 5px;
-            margin: 10px;
-        }
-    }
+        .host__wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
 
-    .logement__rating {
-        margin: 0 60px;
+            .host__global {
+                display: flex;
+                align-items: center;
+                margin: 10px 10px 35px 10px;
 
-        .fa-star {
-            font-size: 32px;
-            padding: 0 7px;
-        }
-    }
+                .host__global__txt {
+                    color: #ff6060;
+                    font-size: 18px;
+                    font-weight: 500;
+                    width: 40%;
+                    padding: 0 10px;
+                    text-align: end;
+                }
+                .host__global__img {
+                    width: 64px;
+                    height: 64px;
+                    border-radius: 50%;
+                }
+            }
 
-    .star--red {
-        color: #ff6060;
-    }
+            .host__rating {
+                margin: 0 30px;
+                display: flex;
+                flex-wrap: nowrap;
 
-    .star--grey {
-        color: #f6f6f6;
+                .fa-star {
+                    font-size: 32px;
+                    padding: 0 7px;
+                }
+            }
+
+            .star--red {
+                color: #ff6060;
+            }
+
+            .star--grey {
+                color: #f6f6f6;
+            }
         }
 }

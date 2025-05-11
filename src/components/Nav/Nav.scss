@@ -13,3 +13,23 @@
         }
     }
 }
+
+@media (max-width: 786px) {
+
+    .header {
+        margin: 0 10px;
+
+        img {
+            width: 160px;
+        }
+
+        .link {
+            font-size: 12px;
+            text-transform: uppercase;
+
+            .link__txt {
+                padding: 0 5px;
+            }
+        }
+    }
+}

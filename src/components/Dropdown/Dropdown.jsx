@@ -15,7 +15,11 @@ function Dropdown({ title, content }) {
                 <i className={`fa-solid fa-chevron-up ${isOpen ? 'rotate' : ''}`}></i>
             </div>
             <div className={`dropdown__content ${isOpen ? 'dropdown--open' : ''}`}>
-                <p>{content}</p>
+                {Array.isArray(content) ? (
+                    <ul>{content}</ul>
+                ) : (
+                    <p>{content}</p>
+                )}
             </div>
         </div>
     );

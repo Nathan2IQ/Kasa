@@ -18,28 +18,28 @@ function Detail(props) {
     };
 
     return (
-        <>
-            <div className='logement'>
-                <div className='logement__txt'>
-                    <h1 className='logement__txt__title'> {props.title} </h1>
-                    <h2 className='logement__txt__place'> {props.place} </h2>
+        <div className='main-container'>
+            <div className='txt__wrapper'>
+                <div className='txt__global'>
+                    <h1 className='txt__global__title'> {props.title} </h1>
+                    <h2 className='txt__global__place'> {props.place} </h2>
                 </div>
-                <div className='logement__host'>
-                    <p className='logement__host__txt'> {props.host} </p>
-                    <img className='logement__host__img' src={props.img} alt='Photo du propriétaire' />
-                </div>
-            </div>
-            <div className='logement'>
-                <div className='logement__tags'>
+                <div className='txt__tags'>
                     {props.tags && props.tags.map((tag, index) => (
-                        <p className='logement__tags__txt' key={index}>{tag}</p>
+                        <p className='txt__tags__content' key={index}>{tag}</p>
                     ))}
                 </div>
-                <div className='logement__rating'>
+            </div>
+            <div className='host__wrapper'>
+                <div className='host__global'>
+                    <p className='host__global__txt'> {props.host} </p>
+                    <img className='host__global__img' src={props.img} alt='Photo du propriétaire' />
+                </div>
+                <div className='host__rating'>
                     {renderStars(props.rating)}
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

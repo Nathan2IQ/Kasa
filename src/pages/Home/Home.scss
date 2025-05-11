@@ -1,3 +1,48 @@
 main {
     min-height: calc(100vw - 195px - 145px);
 }
+
+@media (max-width: 786px) {
+
+    main {
+     
+        .banner {
+            width: 90%;
+            
+            .banner__img {
+                height: 120px;
+                object-fit: fill;
+            }
+
+            .banner__title {
+                top: 35px;
+                font-size: 20px;
+            }
+        }
+
+        .logements-wrapper {
+            
+            .logements-container {
+                display: flex;
+                flex-direction: column;
+                width: 95%;
+                gap: 0;
+                margin: 0;
+                padding: 20px 0 0 0;
+                background-color: white;
+
+                .logement-card {
+
+                    .logement-cover {
+                        height: 255px;
+                    }
+
+                    .logement-title {
+                        width: 80%;
+                        font-size: 16px;
+                    }
+                } 
+            }
+        }
+    }
+}
