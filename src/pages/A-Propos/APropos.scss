@@ -1,7 +1,3 @@
-main {
-    min-height: calc(100vh - 195px - 174px);
-}
-
 @media (max-width: 768px) {
     
     main {
@@ -9,9 +5,13 @@ main {
         flex-direction: column;
         justify-content: center;
 
+        .banner {
+            margin-bottom: 20px;
+        }
+
         .dropdown {
             width: 90%;
-            margin: 20px auto; // Centrer horizontalement
+            margin: 20px auto;
 
             h2 {
                 font-size: 15px;
