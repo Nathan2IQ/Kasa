@@ -37,6 +37,94 @@ Priorités du projet :
 
 Le projet utilise Next.js avec App Router.
 
+# Architecture
+
+frontend/src/
+├── app/ # App Router (Next.js 16)
+│ ├── (auth)/ # Groupe de routes avec layout partagé
+│ │ ├── login/
+│ │ │ └── page.tsx # Page login/inscription
+│ │ └── layout.tsx # Layout pour auth (centré, sans nav)
+│ │
+│ ├── (main)/ # Groupe de routes avec layout principal
+│ │ ├── page.tsx # Page d'accueil (liste logements)
+│ │ ├── about/
+│ │ │ └── page.tsx # Page à propos
+│ │ ├── properties/
+│ │ │ ├── [id]/
+│ │ │ │ └── page.tsx # Détail d'un logement
+│ │ │ └── new/
+│ │ │ └── page.tsx # Ajouter un logement
+│ │ ├── favorites/
+│ │ │ └── page.tsx # Mes favoris
+│ │ ├── messages/
+│ │ │ └── page.tsx # Messagerie
+│ │ └── layout.tsx # Layout principal (header, nav, footer)
+│ │
+│ ├── not-found.tsx # Page 404
+│ ├── layout.tsx # Root layout
+│ ├── globals.css
+│ └── error.tsx # Error boundary
+│
+├── components/ # Composants réutilisables
+│ ├── ui/ # Composants UI génériques
+│ │ ├── Button.tsx
+│ │ ├── Card.tsx
+│ │ ├── Input.tsx
+│ │ ├── Modal.tsx
+│ │ └── Spinner.tsx
+│ ├── layout/ # Composants de layout
+│ │ ├── Header.tsx
+│ │ ├── Footer.tsx
+│ │ └── Navigation.tsx
+│ ├── properties/ # Composants liés aux logements
+│ │ ├── PropertyCard.tsx
+│ │ ├── PropertyList.tsx
+│ │ ├── PropertyGallery.tsx
+│ │ └── PropertyForm.tsx
+│ ├── auth/ # Composants d'authentification
+│ │ ├── LoginForm.tsx
+│ │ └── RegisterForm.tsx
+│ └── messages/ # Composants de messagerie
+│ ├── MessageList.tsx
+│ └── MessageItem.tsx
+│
+├── lib/ # Utilitaires et configuration
+│ ├── api/ # 🎯 DOSSIER API CENTRALISÉ
+│ │ ├── client.ts # Configuration axios/fetch (baseURL, interceptors)
+│ │ ├── endpoints.ts # Constantes des endpoints
+│ │ ├── auth.api.ts # Routes API auth
+│ │ ├── properties.api.ts # Routes API logements
+│ │ ├── favorites.api.ts # Routes API favoris
+│ │ ├── ratings.api.ts # Routes API notes
+│ │ ├── messages.api.ts # Routes API messagerie
+│ │ ├── users.api.ts # Routes API utilisateurs
+│ │ └── index.ts # Export centralisé
+│ │
+│ ├── hooks/ # Custom hooks
+│ │ ├── useAuth.ts
+│ │ ├── useProperties.ts
+│ │ ├── useFavorites.ts
+│ │ └── useMessages.ts
+│ │
+│ ├── utils/ # Fonctions utilitaires
+│ │ ├── formatters.ts
+│ │ ├── validators.ts
+│ │ └── helpers.ts
+│ │
+│ ├── context/ # React Context
+│ │ ├── AuthContext.tsx
+│ │ └── ThemeContext.tsx
+│ │
+│ └── fontawesome.ts # Config FontAwesome (déjà présent)
+│
+└── types/ # Types TypeScript
+├── property.ts
+├── user.ts
+├── message.ts
+├── favorite.ts
+└── api.ts
+
 ## Server Components
 
 Par défaut, utiliser des Server Components.
