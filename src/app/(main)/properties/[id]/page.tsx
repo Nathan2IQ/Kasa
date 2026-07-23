@@ -8,6 +8,7 @@ import {
   faLocationDot,
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
+import PropertyGallery from "@/components/PropertyGallery";
 
 interface PropertyPageProps {
   params: Promise<{
@@ -40,41 +41,11 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Image Gallery - Large image left + 4 images grid right */}
           <div className="lg:col-span-2">
-            <div className="flex gap-3 h-100">
-              {/* Large Image Left */}
-              <div className="flex-1 relative overflow-hidden rounded-lg">
-                <Image
-                  src={
-                    property.pictures && property.pictures.length > 0
-                      ? property.pictures[0]
-                      : property.cover
-                  }
-                  alt={property.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-
-              {/* 4 Images Grid Right */}
-              {property.pictures && property.pictures.length > 1 && (
-                <div className="w-1/2 grid grid-cols-2 gap-3">
-                  {property.pictures.slice(1, 5).map((picture, index) => (
-                    <div
-                      key={index}
-                      className="relative overflow-hidden rounded-lg"
-                    >
-                      <Image
-                        src={picture}
-                        alt={`${property.title} - Image ${index + 2}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <PropertyGallery
+              images={property.pictures || []}
+              title={property.title}
+              coverImage={property.cover}
+            />
           </div>
 
           {/* Host Card */}
