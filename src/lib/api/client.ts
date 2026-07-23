@@ -24,6 +24,8 @@ async function request<T>(
     url += `?${queryString}`;
   }
 
+  console.log("API Request URL:", url);
+
   // Configuration par défaut
   const config: RequestInit = {
     ...fetchOptions,

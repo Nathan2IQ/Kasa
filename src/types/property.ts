@@ -5,10 +5,13 @@ export interface Property {
   price_per_night: number;
   pictures: string[];
   description: string;
-  host_id: string;
-  host_name?: string;
-  host_picture?: string;
+  host: {
+    id: number;
+    name: string;
+    picture?: string;
+  };
   rating_avg?: number;
+  ratings_count?: number;
   location: string;
   equipments: string[];
   tags: string[];
