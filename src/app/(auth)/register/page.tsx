@@ -3,15 +3,17 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { register } from "@/lib/auth";
+import { useAuth } from "@/lib/api/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,6 +42,12 @@ export default function RegisterPage() {
         return;
       }
 
+      if (!acceptedTerms) {
+        setError("Vous devez accepter les conditions générales d'utilisation");
+        setIsLoading(false);
+        return;
+      }
+
       // Inscription
       await register({
         email,
@@ -64,11 +72,16 @@ export default function RegisterPage() {
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center text-[#FF6060] mb-8">
-            Inscription
+      <div className="w-1/3 min-w-75 max-w-200">
+        <div className="bg-white rounded-lg shadow-lg p-20">
+          <h1 className="text-3xl font-bold text-center text-[#99331A] mb-4">
+            Rejoignez la communauté Kasa
           </h1>
+          <p className="text-center mx-auto mb-10">
+            Créez votre compte et commencez à voyager autrement : réservez des
+            logements uniques, découvrez de nouvelles destinations et partagez
+            vos propres lieux avec d&apos;autres voyageurs.
+          </p>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -176,10 +189,45 @@ export default function RegisterPage() {
               />
             </div>
 
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="acceptedTerms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 text-[#FF6060] border-gray-300 rounded focus:ring-2 focus:ring-[#FF6060] cursor-pointer"
+                disabled={isLoading}
+                required
+              />
+              <label
+                htmlFor="acceptedTerms"
+                className="ml-3 text-sm text-gray-700 cursor-pointer"
+              >
+                J&apos;accepte les{" "}
+                <Link
+                  href="/cgu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#99331A] hover:text-[#FF4040] underline font-medium transition-colors"
+                >
+                  Conditions Générales d&apos;Utilisation
+                </Link>{" "}
+                et la{" "}
+                <Link
+                  href="/politique-confidentialite"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#99331A] hover:text-[#FF4040] underline font-medium transition-colors"
+                >
+                  Politique de Confidentialité
+                </Link>
+              </label>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#FF6060] text-white py-3 rounded-lg font-semibold hover:bg-[#FF4040] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#99331A] text-white py-3 rounded-lg font-semibold hover:bg-[#FF4040] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Inscription en cours..." : "S'inscrire"}
             </button>
@@ -190,20 +238,11 @@ export default function RegisterPage() {
               Déjà un compte ?{" "}
               <Link
                 href="/login"
-                className="text-[#FF6060] hover:text-[#FF4040] font-medium transition-colors"
+                className="text-[#99331A] hover:text-[#FF4040] font-medium transition-colors"
               >
                 Se connecter
               </Link>
             </p>
-          </div>
-
-          <div className="mt-4 text-center">
-            <Link
-              href="/"
-              className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
-            >
-              ← Retour à l&apos;accueil
-            </Link>
           </div>
         </div>
       </div>

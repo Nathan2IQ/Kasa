@@ -4,5 +4,6 @@
  */
 
 export * from "./properties.api";
+export * from "./favorites";
 export { apiClient } from "./client";
 export { ENDPOINTS } from "./endpoints";

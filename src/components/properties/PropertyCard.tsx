@@ -3,9 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
+import { useFavorites } from "@/lib/context/FavoritesContext";
+import { useAuth } from "@/lib/api/auth";
 import type { Property } from "@/types/property";
 
 interface PropertyCardProps {
@@ -13,14 +16,31 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({ property }: PropertyCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const propertyIsFavorite = isFavorite(property.id);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    // TODO: Appel API pour ajouter/retirer des favoris
-    console.log("Toggle favorite for property:", property.id);
+
+    // Rediriger vers login si non connecté
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await toggleFavorite(property.id);
+    } catch (error) {
+      console.error("Erreur lors de la modification des favoris:", error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -41,15 +61,23 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         {/* Bouton Favoris */}
         <button
           onClick={handleFavoriteClick}
-          className="absolute right-2 top-2 rounded-xl bg-white/90 p-2 shadow-md transition-all hover:bg-white hover:scale-110"
+          disabled={isUpdating}
+          className="absolute right-2 top-2 rounded-xl bg-white/90 p-2 shadow-md transition-all hover:bg-white hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label={
-            isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
+            propertyIsFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
+          }
+          title={
+            !isAuthenticated
+              ? "Connectez-vous pour ajouter aux favoris"
+              : propertyIsFavorite
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris"
           }
         >
           <FontAwesomeIcon
-            icon={isFavorite ? faHeartSolid : faHeartRegular}
+            icon={propertyIsFavorite ? faHeartSolid : faHeartRegular}
             className="h-6 w-6 transition-colors"
-            style={{ color: isFavorite ? "#FF6060" : "#333" }}
+            style={{ color: propertyIsFavorite ? "#FF6060" : "#333" }}
           />
         </button>
       </div>

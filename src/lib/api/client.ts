@@ -2,20 +2,23 @@
  * Configuration du client HTTP pour les appels API
  */
 
+import { getAuthToken, removeAuthToken } from "./auth";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>;
+  skipAuth?: boolean; // Option pour désactiver l'injection du token
 }
 
 /**
- * Client HTTP centralisé avec gestion des erreurs
+ * Client HTTP centralisé avec gestion des erreurs et authentification automatique
  */
 async function request<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { params, ...fetchOptions } = options;
+  const { params, skipAuth = false, ...fetchOptions } = options;
 
   // Construction de l'URL avec paramètres de query
   let url = `${API_BASE_URL}${endpoint}`;
@@ -26,11 +29,17 @@ async function request<T>(
 
   console.log("API Request URL:", url);
 
+  // Injection automatique du token d'authentification
+  const token = getAuthToken();
+  const authHeaders =
+    !skipAuth && token ? { Authorization: `Bearer ${token}` } : {};
+
   // Configuration par défaut
   const config: RequestInit = {
     ...fetchOptions,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...fetchOptions.headers,
     },
   };
@@ -40,6 +49,16 @@ async function request<T>(
 
     // Gestion des erreurs HTTP
     if (!response.ok) {
+      // Si erreur 401, l'utilisateur n'est plus authentifié
+      if (response.status === 401) {
+        removeAuthToken();
+
+        // Redirection vers login si on est côté client
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      }
+
       const errorData = await response.json().catch(() => ({
         error: `HTTP error ${response.status}`,
       }));

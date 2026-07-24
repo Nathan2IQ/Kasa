@@ -3,10 +3,11 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { login } from "@/lib/api/auth";
+import { useAuth } from "@/lib/api/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -44,11 +45,15 @@ export default function LoginPage() {
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center text-[#FF6060] mb-8">
-            Connexion
+      <div className="w-1/3 min-w-75 max-w-200">
+        <div className="bg-white rounded-lg shadow-lg p-20">
+          <h1 className="text-3xl font-bold text-center text-[#99331A] mb-4">
+            Heureux de vous revoir
           </h1>
+          <p className="text-center w-5/6 mx-auto mb-6">
+            Connectez-vous pour retrouver vos réservations, vos annonces et tout
+            ce qui rend vos séjours uniques.
+          </p>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -98,7 +103,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#FF6060] text-white py-3 rounded-lg font-semibold hover:bg-[#FF4040] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#99331A] cursor-pointer text-white py-3 rounded-lg font-semibold hover:bg-[#FF4040] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Connexion en cours..." : "Se connecter"}
             </button>
@@ -109,20 +114,11 @@ export default function LoginPage() {
               Pas encore de compte ?{" "}
               <Link
                 href="/register"
-                className="text-[#FF6060] hover:text-[#FF4040] font-medium transition-colors"
+                className="text-[#99331A] hover:text-[#FF4040] font-medium transition-colors"
               >
                 S&apos;inscrire
               </Link>
             </p>
-          </div>
-
-          <div className="mt-4 text-center">
-            <Link
-              href="/"
-              className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
-            >
-              ← Retour à l&apos;accueil
-            </Link>
           </div>
         </div>
       </div>

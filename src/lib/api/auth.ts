@@ -104,6 +104,8 @@ export async function login(
  * Inscription de l'utilisateur
  */
 export async function register(data: RegisterData): Promise<AuthResponse> {
+  console.log("Frontend - Données envoyées pour inscription:", data);
+
   try {
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.AUTH.REGISTER}`, {
       method: "POST",
@@ -113,10 +115,13 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
       body: JSON.stringify(data),
     });
 
+    console.log("Frontend - Statut de la réponse:", response.status);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
         error: "Erreur d'inscription",
       }));
+      console.error("Frontend - Erreur du serveur:", errorData);
       throw new Error(errorData.error || "Impossible de créer le compte");
     }
 
@@ -197,3 +202,8 @@ export function getAuthHeaders(): HeadersInit {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
+
+/**
+ * Exports du contexte d'authentification pour faciliter les imports
+ */
+export { AuthProvider, useAuth } from "../context/AuthContext";
