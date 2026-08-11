@@ -1,6 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
+node_modules
 /node_modules
 /.pnp
 .pnp.*
@@ -11,14 +12,18 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
+**/coverage/
 
 # next.js
-/.next/
-/out/
+.next/
+**/.next/
+out/
+**/out/
 
 # production
-/build
+build/
+**/build/
 
 # misc
 .DS_Store
@@ -32,6 +37,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -42,3 +48,13 @@ next-env.d.ts
 
 *storybook.log
 storybook-static
+
+# backend specific
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep
+backend/data/*.sqlite3
+backend/data/*.db
+
+# IDE
+.idea
+.vscode
