@@ -13,9 +13,25 @@ const { initialize } = require("./db");
 const app = express();
 
 // Enable CORS for frontend
+const allowedOrigins = [
+  "http://localhost:3001", // Local dev
+  "https://vercel.app", // Vercel preview deployments
+  process.env.FRONTEND_URL, // Production frontend URL
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: "http://localhost:3001", // Next.js dev server
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+
+      // Check if origin is allowed or matches Vercel pattern
+      if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   }),
 );
