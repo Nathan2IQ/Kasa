@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [accountType, setAccountType] = useState<"client" | "owner">("client");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +55,7 @@ export default function RegisterPage() {
         password,
         firstName,
         lastName,
+        role: accountType,
       });
 
       // Redirection vers la page d'accueil
@@ -71,13 +73,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="flex-1 flex items-center justify-center px-4 py-12">
-      <div className="w-1/3 min-w-75 max-w-200">
-        <div className="bg-white rounded-lg shadow-lg p-20">
-          <h1 className="text-3xl font-bold text-center text-[#99331A] mb-4">
+    <main className="flex-1 flex items-center justify-center px-4 py-6 md:py-12">
+      <div className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3 max-w-lg">
+        <div className="bg-white rounded-lg shadow-lg p-6 md:p-10 lg:p-20">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-[#99331A] mb-3 md:mb-4">
             Rejoignez la communauté Kasa
           </h1>
-          <p className="text-center mx-auto mb-10">
+          <p className="text-center text-sm md:text-base mx-auto mb-6 md:mb-10">
             Créez votre compte et commencez à voyager autrement : réservez des
             logements uniques, découvrez de nouvelles destinations et partagez
             vos propres lieux avec d&apos;autres voyageurs.
@@ -89,8 +91,8 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="firstName"
@@ -127,6 +129,51 @@ export default function RegisterPage() {
                   disabled={isLoading}
                   required
                 />
+              </div>
+            </div>
+
+            {/* Type de compte */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-3">
+                Type de compte
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setAccountType("client")}
+                  className={`p-3 md:p-4 border-2 rounded-lg transition-all ${
+                    accountType === "client"
+                      ? "border-[#99331A] bg-[#99331A]/5"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <div className="text-2xl md:text-3xl mb-2">🏠</div>
+                  <div className="font-semibold text-sm md:text-base text-gray-900">
+                    Voyageur
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Je souhaite réserver des logements
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAccountType("owner")}
+                  className={`p-3 md:p-4 border-2 rounded-lg transition-all ${
+                    accountType === "owner"
+                      ? "border-[#99331A] bg-[#99331A]/5"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <div className="text-2xl md:text-3xl mb-2">🔑</div>
+                  <div className="font-semibold text-sm md:text-base text-gray-900">
+                    Propriétaire
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Je souhaite proposer mes logements
+                  </div>
+                </button>
               </div>
             </div>
 

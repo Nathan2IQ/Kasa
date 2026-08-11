@@ -2,7 +2,7 @@
  * API Routes pour les logements
  */
 
-import { apiClient } from "./client";
+import { apiClient, HTTPError } from "./client";
 import { ENDPOINTS } from "./endpoints";
 import type { Property } from "@/types/property";
 
@@ -16,8 +16,17 @@ export async function getProperties(): Promise<Property[]> {
 /**
  * Récupère les détails d'un logement par son ID
  */
-export async function getPropertyById(id: string): Promise<Property> {
-  return apiClient.get<Property>(ENDPOINTS.PROPERTIES.BY_ID(id));
+export async function getPropertyById(id: string): Promise<Property | null> {
+  try {
+    return await apiClient.get<Property>(ENDPOINTS.PROPERTIES.BY_ID(id));
+  } catch (error) {
+    // Si l'erreur est une 404, retourner null pour déclencher la page not-found
+    if (error instanceof HTTPError && error.status === 404) {
+      return null;
+    }
+    // Pour les autres erreurs, les laisser se propager
+    throw error;
+  }
 }
 
 /**
@@ -65,4 +74,18 @@ export async function addPropertyToFavorites(id: string): Promise<void> {
  */
 export async function removePropertyFromFavorites(id: string): Promise<void> {
   return apiClient.delete<void>(ENDPOINTS.PROPERTIES.FAVORITE(id));
+}
+
+/**
+ * Récupère la liste de tous les équipements disponibles
+ */
+export async function getAvailableEquipments(): Promise<string[]> {
+  return apiClient.get<string[]>("/api/properties/equipments");
+}
+
+/**
+ * Récupère la liste de tous les tags/catégories disponibles
+ */
+export async function getAvailableTags(): Promise<string[]> {
+  return apiClient.get<string[]>("/api/properties/tags");
 }

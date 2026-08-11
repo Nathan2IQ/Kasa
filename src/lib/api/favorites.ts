@@ -30,9 +30,6 @@ export async function getUserFavorites(userId: string): Promise<Property[]> {
 /**
  * Vérifie si un logement est dans les favoris
  */
-export async function isFavorite(
-  propertyId: string,
-  favorites: Property[],
-): boolean {
+export function isFavorite(propertyId: string, favorites: Property[]): boolean {
   return favorites.some((fav) => fav.id === propertyId);
 }

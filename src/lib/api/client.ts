@@ -3,12 +3,26 @@
  */
 
 import { getAuthToken, removeAuthToken } from "./auth";
+import { logger } from "@/lib/utils/logger";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>;
   skipAuth?: boolean; // Option pour désactiver l'injection du token
+}
+
+/**
+ * Classe d'erreur HTTP personnalisée avec status code
+ */
+export class HTTPError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
+    this.name = "HTTPError";
+  }
 }
 
 /**
@@ -27,7 +41,7 @@ async function request<T>(
     url += `?${queryString}`;
   }
 
-  console.log("API Request URL:", url);
+  logger.log("API Request URL:", url);
 
   // Injection automatique du token d'authentification
   const token = getAuthToken();
@@ -40,8 +54,8 @@ async function request<T>(
     headers: {
       "Content-Type": "application/json",
       ...authHeaders,
-      ...fetchOptions.headers,
-    },
+      ...(fetchOptions.headers || {}),
+    } as HeadersInit,
   };
 
   try {
@@ -62,13 +76,20 @@ async function request<T>(
       const errorData = await response.json().catch(() => ({
         error: `HTTP error ${response.status}`,
       }));
-      throw new Error(errorData.error || `Request failed: ${response.status}`);
+      throw new HTTPError(
+        errorData.error || `Request failed: ${response.status}`,
+        response.status,
+      );
     }
 
-    // Retour des données JSON
+    // Retour des données JSON (sauf si 204 No Content)
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
     return await response.json();
   } catch (error) {
-    console.error("API request error:", error);
+    logger.error("API request error:", error);
     throw error;
   }
 }

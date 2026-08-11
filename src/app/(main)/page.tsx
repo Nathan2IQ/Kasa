@@ -2,6 +2,19 @@ import { getProperties } from "@/lib/api";
 import PropertyList from "@/components/properties/PropertyList";
 import Image from "next/image";
 import type { Property } from "@/types/property";
+import type { Metadata } from "next";
+import { logger } from "@/lib/utils/logger";
+
+export const metadata: Metadata = {
+  title: "Location d'appartements et maisons",
+  description:
+    "Découvrez des milliers d'hébergements uniques. Réservez en toute confiance avec Kasa.",
+  openGraph: {
+    title: "Kasa - Location d'appartements et maisons entre particuliers",
+    description: "Découvrez des milliers d'hébergements uniques",
+    images: ["/hero.png"],
+  },
+};
 
 export default async function Home() {
   let properties: Property[] = [];
@@ -14,11 +27,53 @@ export default async function Home() {
       e instanceof Error
         ? e.message
         : "Erreur lors du chargement des logements";
-    console.error("Error fetching properties:", e);
+    logger.error("Error fetching properties:", e);
   }
+
+  // Schema.org JSON-LD pour la page d'accueil
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Kasa",
+    description:
+      "Plateforme de location d'appartements et maisons entre particuliers",
+    url: "https://kasa.fr",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://kasa.fr/?search={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Kasa",
+    description: "Location d'appartements et maisons entre particuliers",
+    url: "https://kasa.fr",
+    logo: "https://kasa.fr/logo.png",
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "Service Client",
+      availableLanguage: ["fr"],
+    },
+  };
 
   return (
     <main className="min-h-screen p-8">
+      {/* Schema.org JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center text-center my-10">
@@ -35,6 +90,8 @@ export default async function Home() {
             width={1300}
             height={600}
             className="rounded-lg shadow-md"
+            priority
+            fetchPriority="high"
           />
         </div>
 

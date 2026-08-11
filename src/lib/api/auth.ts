@@ -13,6 +13,8 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  role?: "owner" | "client" | "admin";
+  picture?: string;
 }
 
 export interface LoginCredentials {
@@ -25,6 +27,7 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
+  role?: "owner" | "client";
 }
 
 export interface AuthResponse {

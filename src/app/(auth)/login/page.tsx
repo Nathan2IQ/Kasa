@@ -44,13 +44,13 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex-1 flex items-center justify-center px-4 py-12">
-      <div className="w-1/3 min-w-75 max-w-200">
-        <div className="bg-white rounded-lg shadow-lg p-20">
-          <h1 className="text-3xl font-bold text-center text-[#99331A] mb-4">
+    <main className="flex-1 flex items-center justify-center px-4 py-6 md:py-12">
+      <div className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-1/3 max-w-lg">
+        <div className="bg-white rounded-lg shadow-lg p-6 md:p-10 lg:p-20">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-[#99331A] mb-3 md:mb-4">
             Heureux de vous revoir
           </h1>
-          <p className="text-center w-5/6 mx-auto mb-6">
+          <p className="text-center text-sm md:text-base w-full md:w-5/6 mx-auto mb-4 md:mb-6">
             Connectez-vous pour retrouver vos réservations, vos annonces et tout
             ce qui rend vos séjours uniques.
           </p>
@@ -61,7 +61,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
             <div>
               <label
                 htmlFor="email"

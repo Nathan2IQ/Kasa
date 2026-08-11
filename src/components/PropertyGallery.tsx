@@ -4,12 +4,59 @@ import { useState } from "react";
 import Image from "next/image";
 import ImageCarousel from "./ImageCarousel";
 
+/**
+ * Props du composant PropertyGallery
+ * @typedef {Object} PropertyGalleryProps
+ * @property {string[]} images - Tableau d'URLs des images de la propriété
+ * @property {string} title - Titre du bien immobilier
+ * @property {string} coverImage - Image de couverture principale
+ */
 interface PropertyGalleryProps {
   images: string[];
   title: string;
   coverImage: string;
 }
 
+/**
+ * Composant PropertyGallery - Galerie de miniatures cliquables
+ *
+ * Affiche une grille de miniatures d'images qui, au clic, ouvre un carrousel plein écran.
+ * - Affiche jusqu'à 4 miniatures visibles
+ * - Indique le nombre d'images restantes (+X) s'il y en a plus de 4
+ * - Ouvre le carrousel en plein écran au clic
+ *
+ * **Comportement** :
+ * - 1-4 images : Affiche toutes les miniatures
+ * - 5+ images : Affiche 3 miniatures + badge "+X autres"
+ * - Clic sur une miniature : Ouvre le carrousel à cette image
+ *
+ * @component
+ * @param {PropertyGalleryProps} props - Props du composant
+ * @example
+ * // Galerie basique
+ * <PropertyGallery
+ *   images={[
+ *     "/uploads/image1.jpg",
+ *     "/uploads/image2.jpg",
+ *     "/uploads/image3.jpg"
+ *   ]}
+ *   title="Appartement Moderne"
+ *   coverImage="/uploads/cover.jpg"
+ * />
+ *
+ * @example
+ * // Avec beaucoup d'images (affiche +X)
+ * <PropertyGallery
+ *   images={arrayOf10Images}
+ *   title="Villa"
+ *   coverImage={coverUrl}
+ * />
+ *
+ * @returns {JSX.Element|null} Galerie de miniatures ou null si pas d'images
+ *
+ * @see {@link ImageCarousel} Carrousel ouvert au clic
+ * @see {@link PropertyCard} Carte qui utilise souvent ce composant
+ */
 export default function PropertyGallery({
   images,
   title,
@@ -40,6 +87,7 @@ export default function PropertyGallery({
             fill
             className="object-cover"
             priority
+            unoptimized
           />
         </button>
 
@@ -58,6 +106,7 @@ export default function PropertyGallery({
                   alt={`${title} - Image ${index + 2}`}
                   fill
                   className="object-cover"
+                  unoptimized
                 />
                 {/* Show "+X" on last image if there are more images */}
                 {index === 3 && allImages.length > 5 && (

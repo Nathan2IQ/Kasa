@@ -9,6 +9,14 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * Props du composant ImageCarousel
+ * @typedef {Object} ImageCarouselProps
+ * @property {string[]} images - Tableau d'URLs des images à afficher
+ * @property {string} title - Titre du bien immobilier
+ * @property {number} [initialIndex=0] - Index de l'image de départ
+ * @property {() => void} onClose - Fonction appelée à la fermeture du carrousel
+ */
 interface ImageCarouselProps {
   images: string[];
   title: string;
@@ -16,6 +24,48 @@ interface ImageCarouselProps {
   onClose: () => void;
 }
 
+/**
+ * Composant ImageCarousel - Carrousel d'images en plein écran
+ *
+ * Affiche une galerie d'images navigable avec :
+ * - Navigation précédent/suivant
+ * - Compteur d'images (1/5)
+ * - Bouton de fermeture
+ * - Fond sombre semi-transparent
+ *
+ * **Fonctionnalités** :
+ * - Navigation avec flèches gauche/droite
+ * - Navigation circulaire (retour au début après la dernière image)
+ * - Fermeture en cliquant sur le fond ou le bouton X
+ * - Cache les boutons de navigation si une seule image
+ *
+ * @component
+ * @param {ImageCarouselProps} props - Props du composant
+ * @example
+ * // Carrousel avec plusieurs images
+ * <ImageCarousel
+ *   images={[
+ *     "https://example.com/image1.jpg",
+ *     "https://example.com/image2.jpg",
+ *     "https://example.com/image3.jpg"
+ *   ]}
+ *   title="Appartement Paris"
+ *   onClose={() => console.log('Fermé')}
+ * />
+ *
+ * @example
+ * // Carrousel démarrant à l'image 3
+ * <ImageCarousel
+ *   images={imageArray}
+ *   title="Maison"
+ *   initialIndex={2}
+ *   onClose={handleClose}
+ * />
+ *
+ * @returns {JSX.Element|null} Carrousel en plein écran ou null si pas d'images
+ *
+ * @see {@link PropertyGallery} Galerie de miniatures qui ouvre le carrousel
+ */
 export default function ImageCarousel({
   images,
   title,
@@ -78,6 +128,7 @@ export default function ImageCarousel({
             className="object-contain"
             priority
             data-testid="carousel-image"
+            unoptimized
           />
         </div>
 

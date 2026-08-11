@@ -2,15 +2,17 @@
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/lib/api/auth";
 import {
   getAvailableEquipments,
   getAvailableTags,
+  getPropertyById,
+  updateProperty,
+  deleteProperty,
 } from "@/lib/api/properties.api";
 import Image from "next/image";
 
-// Catégories prédéfinies de base (fallback si l'API échoue)
 const FALLBACK_TAGS = [
   "Appartement",
   "Studio",
@@ -27,15 +29,15 @@ interface FormData {
   postalCode: string;
   coverImage: string;
   pictures: string[];
-  hostName: string;
-  hostPicture: string;
   equipments: string[];
   tags: string[];
   price_per_night: string;
 }
 
-export default function NewPropertyPage() {
+export default function EditPropertyPage() {
   const router = useRouter();
+  const params = useParams();
+  const propertyId = params.id as string;
   const { user, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,8 @@ export default function NewPropertyPage() {
   const [presetTags, setPresetTags] = useState<string[]>(FALLBACK_TAGS);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -52,23 +56,61 @@ export default function NewPropertyPage() {
     postalCode: "",
     coverImage: "",
     pictures: [],
-    hostName: user ? `${user.firstName} ${user.lastName}` : "",
-    hostPicture: user?.picture || "",
     equipments: [],
     tags: [],
     price_per_night: "",
   });
 
-  // Vérifier que l'utilisateur a le bon rôle (owner ou admin)
+  // Charger les données de la propriété
   useEffect(() => {
-    if (!isLoading && user) {
-      if (user.role !== "owner" && user.role !== "admin") {
-        router.push("/");
+    async function loadProperty() {
+      try {
+        const property = await getPropertyById(propertyId);
+
+        // Si la propriété n'existe pas, rediriger vers 404
+        if (!property) {
+          router.push("/not-found");
+          return;
+        }
+
+        // Vérifier que l'utilisateur est bien le propriétaire
+        if (
+          user &&
+          String(property.host?.id) !== String(user.id) &&
+          user.role !== "admin"
+        ) {
+          router.push(`/properties/${propertyId}`);
+          return;
+        }
+
+        // Extraire le code postal de la location
+        const locationParts = property.location?.split(" - ") || [];
+        const location = locationParts[0] || "";
+        const postalCode = locationParts[1] || "";
+
+        setFormData({
+          title: property.title || "",
+          description: property.description || "",
+          location,
+          postalCode,
+          coverImage: property.cover || "",
+          pictures: property.pictures || [],
+          equipments: property.equipments || [],
+          tags: property.tags || [],
+          price_per_night: property.price_per_night?.toString() || "80",
+        });
+      } catch (err) {
+        console.error("Erreur lors du chargement:", err);
+        setError("Impossible de charger la propriété");
       }
     }
-  }, [user, isLoading, router]);
 
-  // Charger les équipements et tags disponibles depuis l'API
+    if (user && !isLoading) {
+      loadProperty();
+    }
+  }, [propertyId, user, isLoading, router]);
+
+  // Charger les équipements et tags disponibles
   useEffect(() => {
     async function loadOptions() {
       try {
@@ -82,7 +124,6 @@ export default function NewPropertyPage() {
         }
       } catch (err) {
         console.error("Erreur lors du chargement des options:", err);
-        // En cas d'erreur, on garde les valeurs par défaut
       } finally {
         setIsLoadingData(false);
       }
@@ -97,7 +138,6 @@ export default function NewPropertyPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Upload une image vers le serveur
   const uploadImage = async (file: File): Promise<string> => {
     const token = localStorage.getItem("auth_token");
     const formData = new FormData();
@@ -123,7 +163,6 @@ export default function NewPropertyPage() {
     return `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}${result.url}`;
   };
 
-  // Gérer la sélection de l'image de couverture
   const handleCoverImageSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -136,12 +175,10 @@ export default function NewPropertyPage() {
       setError(err instanceof Error ? err.message : "Erreur lors de l'upload");
     } finally {
       setIsUploadingImage(false);
-      // Réinitialiser l'input pour permettre de sélectionner le même fichier
       e.target.value = "";
     }
   };
 
-  // Gérer la sélection des photos du logement
   const handlePicturesSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -157,25 +194,6 @@ export default function NewPropertyPage() {
       setError(err instanceof Error ? err.message : "Erreur lors de l'upload");
     } finally {
       setIsUploadingImage(false);
-      // Réinitialiser l'input pour permettre de sélectionner le même fichier
-      e.target.value = "";
-    }
-  };
-
-  // Gérer la sélection de la photo de profil
-  const handleHostPictureSelect = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingImage(true);
-    try {
-      const url = await uploadImage(file);
-      setFormData((prev) => ({ ...prev, hostPicture: url }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de l'upload");
-    } finally {
-      setIsUploadingImage(false);
-      // Réinitialiser l'input pour permettre de sélectionner le même fichier
       e.target.value = "";
     }
   };
@@ -228,12 +246,6 @@ export default function NewPropertyPage() {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        throw new Error("Non authentifié");
-      }
-
-      // Construire la location complète
       const fullLocation = formData.postalCode
         ? `${formData.location} - ${formData.postalCode}`
         : formData.location;
@@ -244,48 +256,36 @@ export default function NewPropertyPage() {
         location: fullLocation,
         cover: formData.coverImage,
         pictures: formData.pictures,
-        host_id: user?.id, // Lier à l'utilisateur connecté
-        host: {
-          name: formData.hostName,
-          picture: formData.hostPicture || null,
-        },
         equipments: formData.equipments,
         tags: formData.tags,
         price_per_night: parseInt(formData.price_per_night) || 80,
       };
 
-      console.log("Payload envoyé au backend:", payload);
-      console.log("User ID:", user?.id);
-      console.log("Nombre d'images:", payload.pictures.length);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/properties`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Erreur lors de la création");
-      }
-
-      const createdProperty = await response.json();
-      console.log("Propriété créée:", createdProperty);
-      router.push(`/properties/${createdProperty.id}`);
+      await updateProperty(propertyId, payload);
+      router.push(`/properties/${propertyId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setError(
+        err instanceof Error ? err.message : "Erreur lors de la modification",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Afficher un message pour les utilisateurs non autorisés
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteProperty(propertyId);
+      router.push("/");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erreur lors de la suppression",
+      );
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (!isLoading && user && user.role !== "owner" && user.role !== "admin") {
     return (
       <ProtectedRoute>
@@ -297,9 +297,7 @@ export default function NewPropertyPage() {
                 Accès réservé aux propriétaires
               </h1>
               <p className="text-lg text-gray-600 mb-8">
-                Cette page est réservée aux utilisateurs ayant un compte
-                propriétaire. Seuls les propriétaires peuvent ajouter de
-                nouveaux logements sur la plateforme.
+                Vous ne pouvez modifier que vos propres annonces.
               </p>
               <button
                 type="button"
@@ -317,10 +315,9 @@ export default function NewPropertyPage() {
 
   return (
     <ProtectedRoute>
-      <main className="flex-1 px-4 md:px-8 py-6 md:py-12 min-h-screen">
+      <main className="flex-1 px-8 py-12 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          {/* Header avec titre et bouton */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
+          <div className="flex justify-between items-center mb-8">
             <button
               type="button"
               onClick={() => router.back()}
@@ -329,17 +326,27 @@ export default function NewPropertyPage() {
               ← Retour
             </button>
           </div>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6 relative">
-            <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
-              Ajouter une propriété
+
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Modifier la propriété
             </h1>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-[#99331A] text-white px-6 py-2 rounded-md hover:bg-[#7A2815] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {isSubmitting ? "En cours..." : "Ajouter"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+              >
+                Supprimer
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="bg-[#99331A] text-white px-6 py-2 rounded-md hover:bg-[#7A2815] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isSubmitting ? "En cours..." : "Enregistrer"}
+              </button>
+            </div>
           </div>
 
           {error && (
@@ -349,15 +356,15 @@ export default function NewPropertyPage() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* COLONNE GAUCHE */}
               <div>
-                <div className="bg-white py-6 md:py-10 px-4 md:px-10 lg:px-20 mb-6 md:mb-10 rounded-lg shadow-sm">
-                  {/* Titre de la propriété */}
-                  <div className="mb-4 md:mb-5">
+                <div className="bg-white py-10 px-20 mb-10 rounded-lg shadow-sm">
+                  {/* Titre */}
+                  <div className="mb-5">
                     <label
                       htmlFor="title"
-                      className="block text-base md:text-xl font-medium text-gray-900 mb-2"
+                      className="block text-xl font-medium text-gray-900 mb-2"
                     >
                       Titre de la propriété
                     </label>
@@ -369,15 +376,14 @@ export default function NewPropertyPage() {
                       value={formData.title}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none"
-                      placeholder="Ex : Appartement cosy au cœur de paris"
                     />
                   </div>
 
                   {/* Description */}
-                  <div className="mb-4 md:mb-5">
+                  <div className="mb-5">
                     <label
                       htmlFor="description"
-                      className="block text-base md:text-xl font-medium text-gray-900  mb-2"
+                      className="block text-xl font-medium text-gray-900 mb-2"
                     >
                       Description
                     </label>
@@ -388,15 +394,14 @@ export default function NewPropertyPage() {
                       value={formData.description}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none resize-none"
-                      placeholder="Décrivez votre propriété en détail..."
                     ></textarea>
                   </div>
 
                   {/* Code postal */}
-                  <div className="mb-4 md:mb-5">
+                  <div className="mb-5">
                     <label
                       htmlFor="postalCode"
-                      className="block text-base md:text-xl font-medium text-gray-900  mb-2"
+                      className="block text-xl font-medium text-gray-900 mb-2"
                     >
                       Code postal
                     </label>
@@ -407,15 +412,14 @@ export default function NewPropertyPage() {
                       value={formData.postalCode}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none"
-                      placeholder=""
                     />
                   </div>
 
                   {/* Localisation */}
-                  <div className="mb-4 md:mb-5">
+                  <div className="mb-5">
                     <label
                       htmlFor="location"
-                      className="block text-base md:text-xl font-medium text-gray-900  mb-2"
+                      className="block text-xl font-medium text-gray-900 mb-2"
                     >
                       Localisation
                     </label>
@@ -427,15 +431,14 @@ export default function NewPropertyPage() {
                       value={formData.location}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none"
-                      placeholder=""
                     />
                   </div>
 
                   {/* Prix par nuit */}
-                  <div className="mb-4 md:mb-5">
+                  <div className="mb-5">
                     <label
                       htmlFor="price_per_night"
-                      className="block text-base md:text-xl font-medium text-gray-900  mb-2"
+                      className="block text-xl font-medium text-gray-900 mb-2"
                     >
                       Prix par nuit (€)
                     </label>
@@ -448,61 +451,55 @@ export default function NewPropertyPage() {
                       value={formData.price_per_night}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none"
-                      placeholder="80"
                     />
                   </div>
                 </div>
-                <div>
-                  <div className="bg-white rounded-lg shadow-sm">
-                    {/* Équipements */}
-                    <div className="p-4 md:p-6 rounded-lg shadow-sm">
-                      <h3 className="text-base md:text-xl font-medium text-gray-900 mb-2">
-                        Équipements
-                      </h3>
-                      {isLoadingData ? (
-                        <p className="text-gray-500 text-sm">
-                          Chargement des équipements...
-                        </p>
-                      ) : availableEquipments.length === 0 ? (
-                        <p className="text-gray-500 text-sm">
-                          Aucun équipement disponible
-                        </p>
-                      ) : (
-                        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                          {availableEquipments.map((equipment) => (
-                            <label
-                              key={equipment}
-                              className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={formData.equipments.includes(
-                                  equipment,
-                                )}
-                                onChange={() => toggleEquipment(equipment)}
-                                className="w-4 h-4 text-[#99331A] focus:ring-[#99331A] border-gray-300 rounded"
-                              />
-                              <span className="text-sm text-gray-700">
-                                {equipment}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+
+                {/* Équipements */}
+                <div className="bg-white rounded-lg shadow-sm">
+                  <div className="p-6 rounded-lg shadow-sm">
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">
+                      Équipements
+                    </h3>
+                    {isLoadingData ? (
+                      <p className="text-gray-500 text-sm">
+                        Chargement des équipements...
+                      </p>
+                    ) : availableEquipments.length === 0 ? (
+                      <p className="text-gray-500 text-sm">
+                        Aucun équipement disponible
+                      </p>
+                    ) : (
+                      <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                        {availableEquipments.map((equipment) => (
+                          <label
+                            key={equipment}
+                            className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.equipments.includes(equipment)}
+                              onChange={() => toggleEquipment(equipment)}
+                              className="w-4 h-4 text-[#99331A] focus:ring-[#99331A] border-gray-300 rounded"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {equipment}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* COLONNE DROITE */}
               <div>
-                {/* Image de couverture */}
-                <div className="mb-4 md:mb-6 bg-white p-4 md:p-6 rounded-lg shadow-sm space-y-4">
+                {/* Images */}
+                <div className="mb-6 bg-white p-6 rounded-lg shadow-sm space-y-4">
+                  {/* Image de couverture */}
                   <div>
-                    <label
-                      htmlFor="coverImageFile"
-                      className="block text-base md:text-xl font-medium text-gray-900 mb-2"
-                    >
+                    <label className="block text-xl font-medium text-gray-900 mb-2">
                       Image de couverture
                     </label>
                     {formData.coverImage ? (
@@ -513,9 +510,6 @@ export default function NewPropertyPage() {
                             alt="Aperçu"
                             fill
                             className="object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                            }}
                             unoptimized
                           />
                         </div>
@@ -558,15 +552,12 @@ export default function NewPropertyPage() {
                     )}
                   </div>
 
-                  {/* Image du logement */}
+                  {/* Images du logement */}
                   <div>
-                    <label
-                      htmlFor="picturesFile"
-                      className="block text-base md:text-xl font-medium text-gray-900 mb-2"
-                    >
-                      Image du logement
+                    <label className="block text-xl font-medium text-gray-900 mb-2">
+                      Images du logement
                     </label>
-                    {formData.pictures.length > 0 ? (
+                    {formData.pictures.length > 0 && (
                       <div className="space-y-2 mb-2">
                         {formData.pictures.map((url, index) => (
                           <div
@@ -578,9 +569,6 @@ export default function NewPropertyPage() {
                               alt={`Photo ${index + 1}`}
                               fill
                               className="object-cover"
-                              onError={(e) => {
-                                e.currentTarget.style.display = "none";
-                              }}
                               unoptimized
                             />
                             <button
@@ -593,7 +581,7 @@ export default function NewPropertyPage() {
                           </div>
                         ))}
                       </div>
-                    ) : null}
+                    )}
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                       <input
                         type="file"
@@ -622,171 +610,76 @@ export default function NewPropertyPage() {
                   </div>
                 </div>
 
-                {/* Nom de l'hôte */}
-                <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm space-y-4 mb-6 md:mb-10">
-                  <div>
-                    <label
-                      htmlFor="hostName"
-                      className="block text-base md:text-xl font-medium text-gray-900 mb-2"
-                    >
-                      Nom de l&apos;hôte
-                    </label>
-                    <input
-                      type="text"
-                      id="hostName"
-                      name="hostName"
-                      required
-                      value={formData.hostName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none"
-                      placeholder=""
-                    />
-                  </div>
-
-                  {/* Photo de profil */}
-                  <div>
-                    <label
-                      htmlFor="hostPictureFile"
-                      className="block text-base md:text-xl font-medium text-gray-900 mb-2"
-                    >
-                      Photo de profil
-                    </label>
-                    {formData.hostPicture ? (
-                      <div className="relative w-24 h-24 mx-auto">
-                        <div className="w-full h-full relative rounded-full overflow-hidden bg-gray-100">
-                          <Image
-                            src={formData.hostPicture}
-                            alt="Aperçu hôte"
-                            fill
-                            className="object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                            }}
-                            unoptimized
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              hostPicture: "",
-                            }))
-                          }
-                          className="absolute -top-1 -right-1 w-8 h-8 bg-[#99331A] text-white rounded-full hover:bg-[#7A2815] transition-colors flex items-center justify-center cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                        <input
-                          type="file"
-                          id="hostPictureFile"
-                          accept="image/*"
-                          onChange={handleHostPictureSelect}
-                          className="hidden"
-                          disabled={isUploadingImage}
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            document.getElementById("hostPictureFile")?.click()
-                          }
-                          disabled={isUploadingImage}
-                          className="w-10 h-10 bg-[#99331A] text-white rounded-md hover:bg-[#7A2815] transition-colors flex items-center justify-center mx-auto text-xl cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        >
-                          {isUploadingImage ? "⟳" : "+"}
-                        </button>
-                        <p className="text-sm text-gray-500 mt-2">
-                          {isUploadingImage
-                            ? "Upload en cours..."
-                            : "Ajouter une image"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 {/* Catégories */}
-                <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
-                  <div>
-                    <h3 className="text-base md:text-xl font-medium text-gray-900 mb-4">
-                      Catégories
-                    </h3>
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-medium text-gray-900 mb-4">
+                    Catégories
+                  </h3>
 
-                    {/* Tags sélectionnés */}
-                    {formData.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-5 border-b-2 border-gray-200 pb-4">
-                        {formData.tags.map((tag) => (
-                          <span
+                  {formData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-5 border-b-2 border-gray-200 pb-4">
+                      {formData.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm border border-[#99331A]"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            className="text-gray-500 hover:text-[#99331A] transition-colors cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {!isLoadingData && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {presetTags
+                        .filter((tag) => !formData.tags.includes(tag))
+                        .map((tag) => (
+                          <button
                             key={tag}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm border border-[#99331A]"
+                            type="button"
+                            onClick={() => toggleTag(tag)}
+                            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm border border-gray-200 transition-colors cursor-pointer"
                           >
                             {tag}
-                            <button
-                              type="button"
-                              onClick={() => removeTag(tag)}
-                              className="text-gray-500 hover:text-[#99331A] transition-colors cursor-pointer"
-                            >
-                              ✕
-                            </button>
-                          </span>
+                          </button>
                         ))}
-                      </div>
-                    )}
-
-                    {/* Tags disponibles */}
-                    {!isLoadingData && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {presetTags
-                          .filter((tag) => !formData.tags.includes(tag))
-                          .map((tag) => (
-                            <button
-                              key={tag}
-                              type="button"
-                              onClick={() => toggleTag(tag)}
-                              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm border border-gray-200 transition-colors cursor-pointer"
-                            >
-                              {tag}
-                            </button>
-                          ))}
-                      </div>
-                    )}
-
-                    {/* Ajouter une catégorie personnalisée */}
-                    <div className="pt-4">
-                      <label
-                        htmlFor="customTag"
-                        className="block text-base md:text-xl font-medium text-gray-900 mb-2"
-                      >
-                        Ajouter une catégorie personnalisée
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          id="customTag"
-                          value={customTag}
-                          onChange={(e) => setCustomTag(e.target.value)}
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none"
-                          placeholder="Nouveau tag"
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              addCustomTag();
-                            }
-                          }}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={addCustomTag}
-                        disabled={!customTag.trim()}
-                        className="mt-3 text-sm text-[#99331A] hover:underline disabled:text-gray-400 disabled:no-underline cursor-pointer"
-                      >
-                        +Ajouter un tag
-                      </button>
                     </div>
+                  )}
+
+                  <div className="pt-4">
+                    <label className="block text-xl font-medium text-gray-900 mb-2">
+                      Ajouter une catégorie personnalisée
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customTag}
+                        onChange={(e) => setCustomTag(e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#99331A] focus:border-[#99331A] outline-none"
+                        placeholder="Nouveau tag"
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addCustomTag();
+                          }
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addCustomTag}
+                      disabled={!customTag.trim()}
+                      className="mt-3 text-sm text-[#99331A] hover:underline disabled:text-gray-400 disabled:no-underline cursor-pointer"
+                    >
+                      +Ajouter un tag
+                    </button>
                   </div>
                 </div>
               </div>
@@ -794,6 +687,39 @@ export default function NewPropertyPage() {
           </form>
         </div>
       </main>
+
+      {/* Modal de confirmation de suppression */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md mx-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Confirmer la suppression
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action
+              est irréversible.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }
