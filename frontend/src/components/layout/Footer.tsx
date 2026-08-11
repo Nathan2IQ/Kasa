@@ -100,6 +100,12 @@ export function Footer() {
           &copy; 2025 Kasa. Tous droits réservés.
         </p>
       </div>
+      <div className="mt-4">
+        <p className="text-center text-sm text-gray-500">
+          Application de démonstration - La base de données est réinitialisée
+          après chaque période d'inactivité
+        </p>
+      </div>
     </footer>
   );
 }

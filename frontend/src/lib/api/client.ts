@@ -5,7 +5,9 @@
 import { getAuthToken, removeAuthToken } from "./auth";
 import { logger } from "@/lib/utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+// Normaliser l'URL de base en retirant le slash final s'il existe
+const rawUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_BASE_URL = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>;
