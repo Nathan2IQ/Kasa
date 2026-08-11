@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "kasa-rqcf.onrender.com",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "https",
         hostname: "s3-eu-west-1.amazonaws.com",
         pathname: "/course.oc-static.com/**",
       },
@@ -91,7 +96,7 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:3000 https://s3-eu-west-1.amazonaws.com; font-src 'self' data:; connect-src 'self' http://localhost:3000;",
+              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:3000 https://kasa-rqcf.onrender.com https://s3-eu-west-1.amazonaws.com; font-src 'self' data:; connect-src 'self' http://localhost:3000 https://kasa-rqcf.onrender.com;",
           },
         ],
       },
